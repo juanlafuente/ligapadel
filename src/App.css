@@ -1,0 +1,58 @@
+:root {
+  --bg: #f4f6f5;
+  --card: #ffffff;
+  --text: #1c2421;
+  --muted: #5d6b66;
+  --accent: #0f766e;
+  --border: #dde3e0;
+  --warn-bg: #fff4e5;
+  --ok: #15803d;
+  --error: #b91c1c;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111615;
+    --card: #1a211f;
+    --text: #e6ece9;
+    --muted: #9aa8a3;
+    --accent: #2dd4bf;
+    --border: #2c3633;
+    --warn-bg: #3a2c14;
+    --ok: #4ade80;
+    --error: #f87171;
+  }
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); }
+
+.app { max-width: 820px; margin: 0 auto; padding: 16px; }
+.header h1 { margin: 8px 0 0; color: var(--accent); }
+.header p { margin: 4px 0 16px; color: var(--muted); }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.card h2 { margin: 0 0 8px; font-size: 1.15rem; }
+.hint { color: var(--muted); font-size: 0.9rem; margin: 0 0 12px; }
+
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.group { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
+.group small { color: var(--muted); font-weight: 400; }
+textarea, select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+textarea { resize: vertical; }
+
+.primary { font: inherit; font-weight: 600; background: var(--accent); color: var(--card); border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer; }
+.error { color: var(--error); }
+.ok { color: var(--ok); }
+.issues { background: var(--warn-bg); border-radius: 8px; padding: 8px 8px 8px 28px; }
+
+.week { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
+.week h3 { margin: 4px 0 8px; font-size: 1rem; }
+.match { display: flex; align-items: center; gap: 8px; padding: 6px 0; flex-wrap: wrap; }
+.pairs { flex: 1; min-width: 200px; }
+.pairs em { color: var(--muted); font-style: normal; margin: 0 4px; }
+.kind { font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--border); min-width: 36px; text-align: center; }
+.rest { color: var(--muted); font-size: 0.9rem; margin: 4px 0 0; }
