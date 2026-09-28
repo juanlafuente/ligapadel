@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { generateRound, planRound } from '../domain/schedule';
+import { MatchCard } from './MatchCard';
 import type { Group, ScheduledMatch } from '../domain/types';
 import { createRound, fetchRoundData, setRoundState, type RoundData } from '../lib/db';
 import { errorMessage, GROUP_IDS, proposeNextGroups } from '../lib/league';
@@ -183,18 +184,11 @@ function NewRound({ league, previous }: { league: League; previous: RoundData | 
           <h3>Vista previa</h3>
           {[...new Set(preview.map((m) => m.week))].map((week) => (
             <div key={week} className="previewWeek">
-              <strong>Semana {week}</strong>
+              <h4 className="sectionTitle">Semana {week}</h4>
               {preview
                 .filter((m) => m.week === week)
                 .map((m, i) => (
-                  <div key={i} className="match">
-                    <span className="kind">{m.kind}</span>
-                    <div className="pairs">
-                      <span>{m.pair1.map(league.nameOf).join(' / ')}</span>
-                      <em>vs</em>
-                      <span>{m.pair2.map(league.nameOf).join(' / ')}</span>
-                    </div>
-                  </div>
+                  <MatchCard key={i} match={{ ...m, id: String(i), estado: 'pendiente', sets: [], updatedAt: '' }} nameOf={league.nameOf} />
                 ))}
             </div>
           ))}

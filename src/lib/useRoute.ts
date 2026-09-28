@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export type Route = 'clasificacion' | 'calendario' | 'admin';
-const ROUTES: Route[] = ['clasificacion', 'calendario', 'admin'];
+export type Route = 'inicio' | 'clasificacion' | 'calendario' | 'admin';
+const ROUTES: Route[] = ['inicio', 'clasificacion', 'calendario', 'admin'];
 
 function parse(hash: string): Route {
   const route = hash.replace(/^#\/?/, '').split(/[/?]/)[0];
-  return ROUTES.includes(route as Route) ? (route as Route) : 'clasificacion';
+  return ROUTES.includes(route as Route) ? (route as Route) : 'inicio';
 }
 
 /** Navegación por #/ruta, que funciona en GitHub Pages sin configurar el servidor. */

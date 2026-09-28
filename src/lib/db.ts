@@ -21,6 +21,8 @@ export interface RoundMatch extends ScheduledMatch {
   id: string;
   estado: MatchState;
   sets: SetScore[];
+  /** Última modificación (al guardar un resultado se actualiza). */
+  updatedAt: string;
 }
 
 export interface RoundData {
@@ -38,6 +40,7 @@ interface MatchRow {
   pareja2_j1: string;
   pareja2_j2: string;
   estado: MatchState;
+  actualizado_en: string;
   sets: { numero: number; juegos_pareja1: number; juegos_pareja2: number }[];
 }
 
@@ -76,7 +79,7 @@ export async function fetchRoundData(round: Round): Promise<RoundData> {
     client().from('vuelta_grupos').select('jugador_id, grupo').eq('vuelta_id', round.id),
     client()
       .from('partidos')
-      .select('id, semana, tipo, pareja1_j1, pareja1_j2, pareja2_j1, pareja2_j2, estado, sets(numero, juegos_pareja1, juegos_pareja2)')
+      .select('id, semana, tipo, pareja1_j1, pareja1_j2, pareja2_j1, pareja2_j2, estado, actualizado_en, sets(numero, juegos_pareja1, juegos_pareja2)')
       .eq('vuelta_id', round.id)
       .order('semana'),
   ]);
@@ -95,6 +98,7 @@ export async function fetchRoundData(round: Round): Promise<RoundData> {
     pair1: [row.pareja1_j1, row.pareja1_j2] as const,
     pair2: [row.pareja2_j1, row.pareja2_j2] as const,
     estado: row.estado,
+    updatedAt: row.actualizado_en,
     sets: [...row.sets]
       .sort((a, b) => a.numero - b.numero)
       .map((set) => ({ pair1: set.juegos_pareja1, pair2: set.juegos_pareja2 })),

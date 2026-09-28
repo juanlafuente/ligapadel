@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RoundMatch } from './db';
-import { formatSets, playedMatches, proposeNextGroups, roundStandings } from './league';
+import { categoryOf, formatSets, kindLabel, playedMatches, proposeNextGroups, roundProgress, roundStandings } from './league';
 
 const match = (id: string, pair1: [string, string], pair2: [string, string], sets: [number, number][], estado: RoundMatch['estado'] = 'jugado'): RoundMatch => ({
   id,
@@ -9,6 +9,7 @@ const match = (id: string, pair1: [string, string], pair2: [string, string], set
   pair1,
   pair2,
   estado,
+  updatedAt: '2026-01-01T00:00:00Z',
   sets: sets.map(([pair1, pair2]) => ({ pair1, pair2 })),
 });
 
@@ -41,5 +42,28 @@ describe('league', () => {
 
   it('formatea los sets', () => {
     expect(formatSets(match('1', ['a', 'b'], ['c', 'd'], [[6, 4], [3, 6], [7, 5]]))).toBe('6-4  3-6  7-5');
+  });
+});
+
+describe('roundProgress', () => {
+  it('marca semanas completas y la semana actual', () => {
+    const m = (week: number, estado: RoundMatch['estado']) => ({
+      ...match(String(week), ['a', 'b'], ['c', 'd'], estado === 'jugado' ? [[6, 1], [6, 1]] : [], estado),
+      week,
+    });
+    const progress = roundProgress([m(1, 'jugado'), m(1, 'jugado'), m(2, 'jugado'), m(2, 'aplazado'), m(3, 'pendiente')]);
+    expect(progress.weeks).toEqual([
+      { week: 1, complete: true },
+      { week: 2, complete: false },
+      { week: 3, complete: false },
+    ]);
+    expect(progress).toMatchObject({ currentWeek: 2, played: 3, total: 5 });
+    expect(roundProgress([m(1, 'jugado')]).currentWeek).toBeNull();
+  });
+
+  it('categorías y etiquetas de tipo', () => {
+    expect(categoryOf('A').name).toBe('Oro');
+    expect(kindLabel('C')).toBe('Bronce');
+    expect(kindLabel('AB')).toBe('Cruzado');
   });
 });

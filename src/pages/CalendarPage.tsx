@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { MatchCard } from '../components/MatchCard';
 import { MatchEditor } from '../components/MatchEditor';
 import { Modal } from '../components/Modal';
 import { ResultForm } from '../components/ResultForm';
-import { scoreMatch } from '../domain/scoring';
 import type { Player, RoundData, RoundMatch } from '../lib/db';
-import { formatSets } from '../lib/league';
+import { roundProgress } from '../lib/league';
+import { EmptyRound } from './StandingsPage';
 
 interface Props {
   data: RoundData | null;
@@ -16,10 +17,10 @@ interface Props {
 
 export function CalendarPage({ data, players, nameOf, isAdmin, onChanged }: Props) {
   const [editing, setEditing] = useState<{ match: RoundMatch; mode: 'result' | 'edit' } | null>(null);
-  if (!data) return <p className="empty">Todavía no hay ninguna vuelta. Créala desde Admin.</p>;
+  if (!data) return <EmptyRound />;
 
   const editable = isAdmin && data.round.estado !== 'cerrada';
-  const weeks = [...new Set(data.matches.map((m) => m.week))].sort((a, b) => a - b);
+  const progress = roundProgress(data.matches);
   const roundPlayers = data.groups.flatMap((g) => g.players);
 
   const close = () => setEditing(null);
@@ -30,24 +31,29 @@ export function CalendarPage({ data, players, nameOf, isAdmin, onChanged }: Prop
 
   return (
     <>
-      {weeks.map((week) => {
+      {progress.weeks.map(({ week, complete }) => {
         const matches = data.matches.filter((m) => m.week === week);
         const playing = new Set(matches.flatMap((m) => [...m.pair1, ...m.pair2]));
         const resting = roundPlayers.filter((p) => !playing.has(p));
         return (
-          <section className="card" key={week}>
-            <h2>Semana {week}</h2>
+          <section className="section" key={week}>
+            <h2 className="sectionTitle">
+              Semana {week}
+              <span className="weekState">{complete ? '✓ completa' : week === progress.currentWeek ? 'esta semana' : ''}</span>
+            </h2>
             {matches.map((match) => (
-              <MatchRow
-                key={match.id}
-                match={match}
-                nameOf={nameOf}
-                editable={editable}
-                onResult={() => setEditing({ match, mode: 'result' })}
-                onEdit={() => setEditing({ match, mode: 'edit' })}
-              />
+              <MatchCard key={match.id} match={match} nameOf={nameOf}>
+                {editable && (
+                  <>
+                    <button onClick={() => setEditing({ match, mode: 'result' })}>Resultado</button>
+                    <button className="ghost" onClick={() => setEditing({ match, mode: 'edit' })}>
+                      Editar
+                    </button>
+                  </>
+                )}
+              </MatchCard>
             ))}
-            {resting.length > 0 && <p className="rest">Descansan: {resting.map(nameOf).join(', ')}</p>}
+            {resting.length > 0 && <p className="rest">😴 Descansan: {resting.map(nameOf).join(', ')}</p>}
           </section>
         );
       })}
@@ -64,43 +70,4 @@ export function CalendarPage({ data, players, nameOf, isAdmin, onChanged }: Prop
       )}
     </>
   );
-}
-
-function MatchRow({ match, nameOf, editable, onResult, onEdit }: {
-  match: RoundMatch;
-  nameOf: (id: string) => string;
-  editable: boolean;
-  onResult: () => void;
-  onEdit: () => void;
-}) {
-  const winner = match.estado === 'jugado' && match.sets.length > 0 ? safeWinner(match) : null;
-  return (
-    <div className="match">
-      <span className="kind">{match.kind}</span>
-      <div className="pairs">
-        <span className={winner === 1 ? 'winner' : undefined}>{match.pair1.map(nameOf).join(' / ')}</span>
-        <em>vs</em>
-        <span className={winner === 2 ? 'winner' : undefined}>{match.pair2.map(nameOf).join(' / ')}</span>
-      </div>
-      <span className={`status status-${match.estado}`}>
-        {match.estado === 'jugado' ? formatSets(match) : match.estado === 'aplazado' ? 'Aplazado' : 'Pendiente'}
-      </span>
-      {editable && (
-        <span className="actions">
-          <button onClick={onResult}>Resultado</button>
-          <button className="ghost" onClick={onEdit}>
-            Editar
-          </button>
-        </span>
-      )}
-    </div>
-  );
-}
-
-function safeWinner(match: RoundMatch): 1 | 2 | null {
-  try {
-    return scoreMatch(match.sets).winner;
-  } catch {
-    return null;
-  }
 }
