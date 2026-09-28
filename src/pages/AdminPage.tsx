@@ -21,6 +21,10 @@ export function AdminPage({ auth, league }: { auth: Auth; league: League }) {
         </p>
         <pre className="code">{`insert into public.admins (user_id, nombre)\nselect id, 'Tu nombre' from auth.users\nwhere email = '${email}';`}</pre>
         <p className="muted">Después recarga esta página.</p>
+        <p className="muted">
+          Tu identificador de usuario: <code>{auth.session.user.id}</code>
+        </p>
+        {auth.adminError && <p className="error">Error al comprobar permisos: {auth.adminError}</p>}
         <button className="ghost" onClick={auth.signOut}>
           Salir
         </button>

@@ -7,6 +7,8 @@ export interface Auth {
   session: Session | null;
   /** null mientras se comprueba. */
   isAdmin: boolean | null;
+  /** Error al comprobar si es admin, para poder diagnosticarlo. */
+  adminError: string | null;
   signIn: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -15,6 +17,7 @@ export function useAuth(): Auth {
   const [ready, setReady] = useState(!supabase);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [adminError, setAdminError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!supabase) return;
@@ -34,13 +37,16 @@ export function useAuth(): Auth {
     }
     let cancelled = false;
     setIsAdmin(null);
+    setAdminError(null);
     supabase
       .from('admins')
       .select('user_id')
       .eq('user_id', userId)
       .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled) setIsAdmin(data !== null);
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        setIsAdmin(data !== null);
+        if (error) setAdminError(`${error.code ?? ''} ${error.message}`.trim());
       });
     return () => {
       cancelled = true;
@@ -60,5 +66,5 @@ export function useAuth(): Auth {
     await supabase?.auth.signOut();
   }, []);
 
-  return { ready, session, isAdmin, signIn, signOut };
+  return { ready, session, isAdmin, adminError, signIn, signOut };
 }
