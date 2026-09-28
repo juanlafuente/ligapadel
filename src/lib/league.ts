@@ -48,9 +48,9 @@ export function categoryOf(groupId: string): Category {
   return CATEGORIES[groupId] ?? { name: groupId, medal: '🎾', tone: 'neutral' };
 }
 
-/** Texto corto del tipo de partido: la categoría si es interno, «Cruzado» si mezcla dos grupos. */
+/** Texto corto del tipo de partido: la categoría de su grupo. */
 export function kindLabel(kind: string): string {
-  return kind.length === 1 ? categoryOf(kind).name : 'Cruzado';
+  return categoryOf(kind).name;
 }
 
 export interface RoundProgress {
@@ -75,9 +75,8 @@ export function roundProgress(matches: readonly RoundMatch[]): RoundProgress {
   };
 }
 
-/** Partidos en los que participa algún jugador del grupo (internos y cruzados). */
 export function groupMatches(groupId: string, matches: readonly RoundMatch[]): RoundMatch[] {
-  return matches.filter((m) => m.kind.includes(groupId));
+  return matches.filter((m) => m.kind === groupId);
 }
 
 /** Últimos partidos con resultado, del más reciente al más antiguo. */

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { generateRound, planRound } from '../domain/schedule';
+import { checkGroups, generateRound } from '../domain/schedule';
 import { MatchCard } from './MatchCard';
 import type { Group, ScheduledMatch } from '../domain/types';
 import { createRound, fetchRoundData, setRoundState, type RoundData } from '../lib/db';
@@ -98,12 +98,7 @@ function NewRound({ league, previous }: { league: League; previous: RoundData | 
 
   const groups: Group[] = GROUP_IDS.map((id) => ({ id, players: active.filter((p) => assign[p.id] === id).map((p) => p.id) }));
   const unassigned = active.filter((p) => !GROUP_IDS.includes(assign[p.id]));
-  let planError: string | null = null;
-  try {
-    planRound(groups);
-  } catch (e) {
-    planError = errorMessage(e);
-  }
+  const planError = checkGroups(groups);
 
   const choose = (playerId: string, group: string) => {
     setAssign((current) => ({ ...current, [playerId]: group }));
@@ -147,7 +142,7 @@ function NewRound({ league, previous }: { league: League; previous: RoundData | 
       <p className="muted">
         {previous
           ? `Grupos propuestos según la vuelta ${previous.round.numero} (sube 1 y baja 1). Puedes ajustarlos.`
-          : 'Reparte los jugadores en los grupos. Cada grupo debe tener 4 o 5 jugadores.'}
+          : 'Reparte los jugadores en los grupos de 4. Cada grupo juega 3 partidos en 4 semanas y descansa una.'}
       </p>
       <div className="groupCounts">
         {groups.map((g) => (

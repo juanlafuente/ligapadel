@@ -27,7 +27,7 @@ export interface StandingRow {
 
 /**
  * Clasificación individual de un grupo. Cuenta todos los partidos en los que
- * participa cada jugador, también los cruzados con otros grupos.
+ * participa cada jugador; los jugadores de otros grupos (p. ej. suplentes) se ignoran.
  * Orden: victorias, diferencia de sets, diferencia de juegos, juegos ganados.
  */
 export function groupStandings(players: readonly PlayerId[], matches: readonly PlayedMatch[]): StandingRow[] {

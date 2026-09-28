@@ -44,7 +44,7 @@ export function validateSchedule(
     }
     const kind = kindOf(match, groupOf);
     if (kind !== null && kind !== match.kind) {
-      issues.push({ type: 'wrong-kind', message: `${label} — las parejas no encajan con un partido ${match.kind}.`, matches: [index] });
+      issues.push({ type: 'wrong-kind', message: `${label} — hay jugadores de fuera del grupo ${match.kind}.`, matches: [index] });
     }
 
     for (const pair of [match.pair1, match.pair2]) push(byPartners, pairKey(pair), index);
@@ -74,14 +74,11 @@ export function validateSchedule(
   return issues;
 }
 
-/** Tipo que corresponde a las parejas: grupo si todos son del mismo, 'AB' si las dos parejas son mixtas. */
+/** Grupo al que corresponden los jugadores, o 'mixto' si hay jugadores de varios grupos. */
 function kindOf(match: ScheduledMatch, groupOf: ReadonlyMap<PlayerId, string>): string | null {
-  const g = [...match.pair1, ...match.pair2].map((player) => groupOf.get(player));
-  if (g.some((id) => id === undefined)) return null;
-  if (g.every((id) => id === g[0])) return g[0]!;
-  const [a, b, c, d] = g as string[];
-  const mixed = a !== b && c !== d && [a, b].sort().join() === [c, d].sort().join();
-  return mixed ? [a, b].sort().join('') : 'mixto';
+  const ids = [...match.pair1, ...match.pair2].map((player) => groupOf.get(player));
+  if (ids.some((id) => id === undefined)) return null;
+  return ids.every((id) => id === ids[0]) ? ids[0]! : 'mixto';
 }
 
 function describe(match: ScheduledMatch, nameOf: (player: PlayerId) => string): string {

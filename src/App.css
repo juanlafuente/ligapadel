@@ -142,8 +142,6 @@ button.link { border: 0; background: none; padding: 0; color: var(--court); font
 .chip-A { background: var(--gold-bg); color: var(--gold); }
 .chip-B { background: var(--silver-bg); color: var(--silver); }
 .chip-C { background: var(--bronze-bg); color: var(--bronze); }
-.chip-AB { background: linear-gradient(90deg, var(--gold-bg) 50%, var(--silver-bg) 50%); color: var(--text); }
-.chip-BC { background: linear-gradient(90deg, var(--silver-bg) 50%, var(--bronze-bg) 50%); color: var(--text); }
 
 /* ---------- Avatares ---------- */
 .avatar {

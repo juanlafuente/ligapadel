@@ -5,16 +5,14 @@ calendario generado automáticamente con parejas que rotan y clasificación indi
 
 ## Reglas
 
-- Cada vuelta, cada jugador juega **4 partidos** sin repetir compañero y como mucho 1 por semana.
-- Grupos de 4 o 5 jugadores, ordenados por nivel (A > B > C).
-  - **12 jugadores (4-4-4):** A juega 3 internos + 1 cruzado con B; B juega 2 internos + 1 con A + 1 con C;
-    C juega 3 internos + 1 con B. 12 partidos en 4 semanas, todos juegan cada semana.
-  - **13 jugadores (p. ej. 4-4-5):** el grupo de 5 juega 5 partidos internos (en cada uno descansa uno)
-    y cada jugador es pareja de todos los demás una vez. La vuelta dura 5 semanas y cada jugador descansa una.
+- Grupos de 4 jugadores, ordenados por nivel (A oro > B plata > C bronce).
+- Cada vuelta dura **4 semanas**. En cada grupo se juegan los **3 partidos** posibles sin repetir pareja
+  (cada jugador juega una vez con cada compañero), uno por semana.
+- Cada grupo **descansa una semana**, distinta para cada grupo y sorteada al generar el calendario
+  (p. ej. semana 1: A, B y C; semana 2: A y B; semana 3: A y C; semana 4: B y C).
 - Resultados por sets (6-4, 7-5, 7-6…); el tercer set se juega completo.
 - Cada victoria vale **1 punto**, da igual ganar 2-0 o 2-1 (victorias y derrotas, como en la NFL).
 - Clasificación: victorias → diferencia de sets → diferencia de juegos → juegos ganados → sorteo.
-  Los partidos cruzados cuentan para la clasificación del grupo de cada jugador.
 - Al cerrar la vuelta sube el primero y baja el último de cada grupo.
 
 ## Desarrollo

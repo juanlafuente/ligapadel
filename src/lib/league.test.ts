@@ -64,6 +64,5 @@ describe('roundProgress', () => {
   it('categorías y etiquetas de tipo', () => {
     expect(categoryOf('A').name).toBe('Oro');
     expect(kindLabel('C')).toBe('Bronce');
-    expect(kindLabel('AB')).toBe('Cruzado');
   });
 });

@@ -4,7 +4,7 @@ import { MatchEditor } from '../components/MatchEditor';
 import { Modal } from '../components/Modal';
 import { ResultForm } from '../components/ResultForm';
 import type { Player, RoundData, RoundMatch } from '../lib/db';
-import { roundProgress } from '../lib/league';
+import { categoryOf, roundProgress } from '../lib/league';
 import { EmptyRound } from './StandingsPage';
 
 interface Props {
@@ -34,7 +34,8 @@ export function CalendarPage({ data, players, nameOf, isAdmin, onChanged }: Prop
       {progress.weeks.map(({ week, complete }) => {
         const matches = data.matches.filter((m) => m.week === week);
         const playing = new Set(matches.flatMap((m) => [...m.pair1, ...m.pair2]));
-        const resting = roundPlayers.filter((p) => !playing.has(p));
+        const restingGroups = data.groups.filter((g) => g.players.every((p) => !playing.has(p)));
+        const resting = roundPlayers.filter((p) => !playing.has(p) && !restingGroups.some((g) => g.players.includes(p)));
         return (
           <section className="section" key={week}>
             <h2 className="sectionTitle">
@@ -52,6 +53,11 @@ export function CalendarPage({ data, players, nameOf, isAdmin, onChanged }: Prop
                   </>
                 )}
               </MatchCard>
+            ))}
+            {restingGroups.map((g) => (
+              <p key={g.id} className="rest">
+                😴 Descansa el grupo {g.id} · {categoryOf(g.id).name}
+              </p>
             ))}
             {resting.length > 0 && <p className="rest">😴 Descansan: {resting.map(nameOf).join(', ')}</p>}
           </section>

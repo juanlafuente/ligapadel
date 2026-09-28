@@ -11,8 +11,7 @@ export interface Group {
 export type Pair = readonly [PlayerId, PlayerId];
 
 /**
- * Tipo de partido: el id del grupo si es interno ('A') o la concatenación
- * de dos grupos contiguos si es cruzado ('AB'), con parejas mixtas.
+ * Tipo de partido: el id del grupo en el que se juega ('A', 'B'...).
  */
 export type MatchKind = string;
 
