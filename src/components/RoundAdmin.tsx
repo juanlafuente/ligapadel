@@ -142,7 +142,7 @@ function NewRound({ league, previous }: { league: League; previous: RoundData | 
       <p className="muted">
         {previous
           ? `Grupos propuestos según la vuelta ${previous.round.numero} (sube 1 y baja 1). Puedes ajustarlos.`
-          : 'Reparte los jugadores en los grupos de 4. Cada grupo juega 3 partidos en 4 semanas y descansa una.'}
+          : 'Reparte los jugadores en los grupos de 4. Cada grupo juega 3 partidos (semanas 1 a 3); la semana 4 es de recuperación.'}
       </p>
       <div className="groupCounts">
         {groups.map((g) => (

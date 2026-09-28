@@ -33,7 +33,7 @@ describe('checkGroups', () => {
 describe('generateRound', () => {
   const seeds = Array.from({ length: 25 }, (_, i) => i + 1);
 
-  it.each(seeds)('12 jugadores (semilla %i): 3 partidos por grupo en 4 semanas', (seed) => {
+  it.each(seeds)('12 jugadores (semilla %i): 3 partidos por grupo en las semanas 1, 2 y 3', (seed) => {
     const groups = makeGroups(4, 4, 4);
     const matches = generateRound(groups, { rng: seededRng(seed) });
 
@@ -41,27 +41,18 @@ describe('generateRound', () => {
     expect(matches).toHaveLength(9);
     for (const group of groups) {
       const own = matches.filter((m) => m.kind === group.id);
-      expect(own).toHaveLength(3);
+      expect(own.map((m) => m.week).sort()).toEqual([1, 2, 3]);
       // Cada jugador es pareja de los otros 3 una vez.
       expect(new Set(own.flatMap((m) => [pairKey(m.pair1), pairKey(m.pair2)])).size).toBe(6);
-      // Juega en 3 semanas distintas y descansa una.
-      expect(new Set(own.map((m) => m.week)).size).toBe(3);
     }
   });
 
-  it.each(seeds)('12 jugadores (semilla %i): cada grupo descansa una semana distinta', (seed) => {
-    const groups = makeGroups(4, 4, 4);
-    const matches = generateRound(groups, { rng: seededRng(seed) });
-    const restWeeks = groups.map((group) => {
-      const played = new Set(matches.filter((m) => m.kind === group.id).map((m) => m.week));
-      return [1, 2, 3, 4].find((week) => !played.has(week));
-    });
-    expect(new Set(restWeeks).size).toBe(3);
-    const perWeek = [1, 2, 3, 4].map((week) => matches.filter((m) => m.week === week).length);
-    expect(perWeek.sort()).toEqual([2, 2, 2, 3]);
+  it('cada semana se juega un partido por grupo y la semana 4 queda libre', () => {
+    const matches = generateRound(makeGroups(4, 4, 4), { rng: seededRng(5) });
+    expect([1, 2, 3, 4].map((week) => matches.filter((m) => m.week === week).length)).toEqual([3, 3, 3, 0]);
   });
 
-  it('sortea parejas y semanas distintas con otra semilla', () => {
+  it('sortea parejas distintas con otra semilla', () => {
     const groups = makeGroups(4, 4, 4);
     const a = generateRound(groups, { rng: seededRng(1) });
     const b = generateRound(groups, { rng: seededRng(2) });

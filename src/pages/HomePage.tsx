@@ -1,5 +1,6 @@
 import { Avatar, LEAGUE_NAME, Logo } from '../components/Brand';
 import { MatchCard } from '../components/MatchCard';
+import { PLAY_WEEKS, RECOVERY_WEEK } from '../domain/schedule';
 import type { RoundData } from '../lib/db';
 import { categoryOf, latestResults, roundProgress, roundStandings } from '../lib/league';
 import type { Route } from '../lib/useRoute';
@@ -39,7 +40,6 @@ export function HomePage({ data, nameOf, isAdmin, navigate }: Props) {
   const progress = roundProgress(data.matches);
   const standings = roundStandings(data);
   const week = progress.currentWeek;
-  const lastWeek = progress.weeks.at(-1)?.week ?? 0;
   const thisWeek = week === null ? [] : data.matches.filter((m) => m.week === week);
   const latest = latestResults(data.matches, 3);
   const percent = progress.total ? Math.round((progress.played / progress.total) * 100) : 0;
@@ -50,7 +50,17 @@ export function HomePage({ data, nameOf, isAdmin, navigate }: Props) {
         <Brand subtitle={`Vuelta ${data.round.numero} · ${ROUND_STATE[data.round.estado]}`} />
         <div className="progress">
           <div className="progressTop">
-            <span>{week === null ? 'Vuelta completada' : <>Semana <strong>{week}</strong> de {lastWeek}</>}</span>
+            <span>
+              {week === null ? (
+                'Vuelta completada'
+              ) : week >= RECOVERY_WEEK ? (
+                <strong>Semana de recuperación</strong>
+              ) : (
+                <>
+                  Semana <strong>{week}</strong> de {PLAY_WEEKS}
+                </>
+              )}
+            </span>
             <span>
               <strong>{progress.played}</strong>/{progress.total} partidos
             </span>
@@ -61,7 +71,7 @@ export function HomePage({ data, nameOf, isAdmin, navigate }: Props) {
           <div className="weekChips">
             {progress.weeks.map((w) => (
               <span key={w.week} className={w.complete ? 'done' : w.week === week ? 'now' : undefined}>
-                S{w.week}
+                {w.week >= RECOVERY_WEEK ? 'Recup.' : `S${w.week}`}
                 {w.complete && ' ✓'}
               </span>
             ))}
@@ -108,7 +118,7 @@ export function HomePage({ data, nameOf, isAdmin, navigate }: Props) {
 
         <section className="section">
           <h2 className="sectionTitle">
-            {week === null ? 'Calendario' : `Semana ${week}`}
+            {week === null ? 'Calendario' : week >= RECOVERY_WEEK ? 'Recuperación' : `Semana ${week}`}
             <button className="link" onClick={() => navigate('calendario')}>
               Ver calendario →
             </button>

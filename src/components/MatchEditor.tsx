@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RECOVERY_WEEK } from '../domain/schedule';
 import { validateSchedule } from '../domain/validation';
 import { updateMatch, type MatchState, type Player, type RoundData, type RoundMatch } from '../lib/db';
 import { errorMessage } from '../lib/league';
@@ -28,7 +29,7 @@ export function MatchEditor({ match, data, players, nameOf, onDone, onCancel }: 
   const issues = validateSchedule(data.groups, schedule, nameOf).filter((issue) => issue.matches.includes(index));
   const duplicated = new Set(slots).size !== slots.length;
 
-  const maxWeek = Math.max(...data.matches.map((m) => m.week)) + 1;
+  const maxWeek = Math.max(RECOVERY_WEEK, ...data.matches.map((m) => m.week));
   const roundPlayers = new Set(data.groups.flatMap((g) => g.players));
   const substitutes = players.filter((p) => p.activo && !roundPlayers.has(p.id));
   const busyThatWeek = new Set(schedule.filter((m) => m.week === week && m.id !== match.id).flatMap((m) => [...m.pair1, ...m.pair2]));
@@ -54,6 +55,7 @@ export function MatchEditor({ match, data, players, nameOf, onDone, onCancel }: 
           {Array.from({ length: maxWeek }, (_, i) => i + 1).map((w) => (
             <option key={w} value={w}>
               Semana {w}
+              {w === RECOVERY_WEEK ? ' (recuperación)' : ''}
             </option>
           ))}
         </select>

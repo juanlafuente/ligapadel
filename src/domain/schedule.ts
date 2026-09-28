@@ -3,7 +3,10 @@ import type { Group, Pair, PlayerId, ScheduledMatch } from './types';
 
 export const GROUP_SIZE = 4;
 export const MATCHES_PER_PLAYER = 3;
-export const WEEKS_PER_ROUND = 4;
+/** Semanas con partido: 1, 2 y 3. */
+export const PLAY_WEEKS = 3;
+/** Semana extra al final de la vuelta para recuperar partidos aplazados. */
+export const RECOVERY_WEEK = PLAY_WEEKS + 1;
 
 /** Devuelve un mensaje si los grupos no sirven para generar una vuelta, o null si están bien. */
 export function checkGroups(groups: readonly Group[]): string | null {
@@ -17,23 +20,18 @@ export function checkGroups(groups: readonly Group[]): string | null {
 
 /**
  * Genera los partidos de una vuelta: en cada grupo de 4 se juegan los 3 partidos
- * posibles sin repetir pareja, uno por semana durante 4 semanas. Cada grupo descansa
- * una semana distinta (sorteada), así nunca coinciden todos los grupos descansando.
+ * posibles sin repetir pareja, uno por semana en las semanas 1, 2 y 3. La semana 4
+ * queda libre para recuperar aplazados.
  */
 export function generateRound(groups: readonly Group[], options: { rng?: Rng } = {}): ScheduledMatch[] {
   const error = checkGroups(groups);
   if (error) throw new Error(error);
   const rng = options.rng ?? Math.random;
 
-  const weeks = Array.from({ length: WEEKS_PER_ROUND }, (_, i) => i + 1);
-  const restWeeks = shuffle(weeks, rng);
-
   return groups
-    .flatMap((group, g) => {
-      const rest = restWeeks[g % WEEKS_PER_ROUND];
-      const playWeeks = weeks.filter((week) => week !== rest);
+    .flatMap((group) => {
       const pairings = shuffle(pairingsOf(shuffle(group.players, rng)), rng);
-      return pairings.map(([pair1, pair2], i) => ({ week: playWeeks[i], kind: group.id, pair1, pair2 }));
+      return pairings.map(([pair1, pair2], i) => ({ week: i + 1, kind: group.id, pair1, pair2 }));
     })
     .sort((a, b) => a.week - b.week || a.kind.localeCompare(b.kind));
 }

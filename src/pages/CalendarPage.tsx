@@ -4,7 +4,8 @@ import { MatchEditor } from '../components/MatchEditor';
 import { Modal } from '../components/Modal';
 import { ResultForm } from '../components/ResultForm';
 import type { Player, RoundData, RoundMatch } from '../lib/db';
-import { categoryOf, roundProgress } from '../lib/league';
+import { RECOVERY_WEEK } from '../domain/schedule';
+import { roundProgress } from '../lib/league';
 import { EmptyRound } from './StandingsPage';
 
 interface Props {
@@ -21,7 +22,6 @@ export function CalendarPage({ data, players, nameOf, isAdmin, onChanged }: Prop
 
   const editable = isAdmin && data.round.estado !== 'cerrada';
   const progress = roundProgress(data.matches);
-  const roundPlayers = data.groups.flatMap((g) => g.players);
 
   const close = () => setEditing(null);
   const done = async () => {
@@ -33,13 +33,11 @@ export function CalendarPage({ data, players, nameOf, isAdmin, onChanged }: Prop
     <>
       {progress.weeks.map(({ week, complete }) => {
         const matches = data.matches.filter((m) => m.week === week);
-        const playing = new Set(matches.flatMap((m) => [...m.pair1, ...m.pair2]));
-        const restingGroups = data.groups.filter((g) => g.players.every((p) => !playing.has(p)));
-        const resting = roundPlayers.filter((p) => !playing.has(p) && !restingGroups.some((g) => g.players.includes(p)));
         return (
           <section className="section" key={week}>
             <h2 className="sectionTitle">
               Semana {week}
+              {week >= RECOVERY_WEEK && ' · recuperación'}
               <span className="weekState">{complete ? '✓ completa' : week === progress.currentWeek ? 'esta semana' : ''}</span>
             </h2>
             {matches.map((match) => (
@@ -54,15 +52,16 @@ export function CalendarPage({ data, players, nameOf, isAdmin, onChanged }: Prop
                 )}
               </MatchCard>
             ))}
-            {restingGroups.map((g) => (
-              <p key={g.id} className="rest">
-                😴 Descansa el grupo {g.id} · {categoryOf(g.id).name}
-              </p>
-            ))}
-            {resting.length > 0 && <p className="rest">😴 Descansan: {resting.map(nameOf).join(', ')}</p>}
           </section>
         );
       })}
+
+      {data.round.estado !== 'cerrada' && !progress.weeks.some((w) => w.week >= RECOVERY_WEEK) && (
+        <section className="section">
+          <h2 className="sectionTitle">Semana {RECOVERY_WEEK} · recuperación</h2>
+          <p className="emptyLine">Semana libre para recuperar los partidos aplazados.</p>
+        </section>
+      )}
 
       {editing?.mode === 'result' && (
         <Modal title="Resultado" onClose={close}>
