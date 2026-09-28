@@ -32,7 +32,7 @@ export function validateSets(sets: readonly SetScore[]): string | null {
   return null;
 }
 
-/** Ganar 2-0 da 3 puntos al ganador y 0 al perdedor; ganar 2-1 da 2 y 1. */
+/** Cada victoria vale 1 punto, sea 2-0 o 2-1; la derrota 0. */
 export function scoreMatch(sets: readonly SetScore[]): MatchOutcome {
   const error = validateSets(sets);
   if (error) throw new Error(error);
@@ -40,7 +40,6 @@ export function scoreMatch(sets: readonly SetScore[]): MatchOutcome {
   const setsPair1 = sets.filter((set) => set.pair1 > set.pair2).length;
   const setsPair2 = sets.length - setsPair1;
   const winner = setsPair1 > setsPair2 ? 1 : 2;
-  const [winnerPoints, loserPoints] = sets.length === 2 ? [3, 0] : [2, 1];
 
   return {
     winner,
@@ -48,7 +47,7 @@ export function scoreMatch(sets: readonly SetScore[]): MatchOutcome {
     setsPair2,
     gamesPair1: sets.reduce((sum, set) => sum + set.pair1, 0),
     gamesPair2: sets.reduce((sum, set) => sum + set.pair2, 0),
-    pointsPair1: winner === 1 ? winnerPoints : loserPoints,
-    pointsPair2: winner === 2 ? winnerPoints : loserPoints,
+    pointsPair1: winner === 1 ? 1 : 0,
+    pointsPair2: winner === 2 ? 1 : 0,
   };
 }

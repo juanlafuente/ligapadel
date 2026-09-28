@@ -24,14 +24,14 @@ describe('validateSets', () => {
 });
 
 describe('scoreMatch', () => {
-  it('2-0: 3 puntos al ganador y 0 al perdedor', () => {
+  it('2-0: 1 punto al ganador y 0 al perdedor', () => {
     expect(scoreMatch([s(6, 4), s(7, 5)])).toEqual({
-      winner: 1, setsPair1: 2, setsPair2: 0, gamesPair1: 13, gamesPair2: 9, pointsPair1: 3, pointsPair2: 0,
+      winner: 1, setsPair1: 2, setsPair2: 0, gamesPair1: 13, gamesPair2: 9, pointsPair1: 1, pointsPair2: 0,
     });
   });
-  it('2-1: 2 puntos al ganador y 1 al perdedor', () => {
+  it('2-1: también 1 punto al ganador y 0 al perdedor', () => {
     expect(scoreMatch([s(6, 4), s(3, 6), s(5, 7)])).toEqual({
-      winner: 2, setsPair1: 1, setsPair2: 2, gamesPair1: 14, gamesPair2: 17, pointsPair1: 1, pointsPair2: 2,
+      winner: 2, setsPair1: 1, setsPair2: 2, gamesPair1: 14, gamesPair2: 17, pointsPair1: 0, pointsPair2: 1,
     });
   });
   it('lanza error con un resultado inválido', () => {

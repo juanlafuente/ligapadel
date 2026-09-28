@@ -12,8 +12,8 @@ calendario generado automáticamente con parejas que rotan y clasificación indi
   - **13 jugadores (p. ej. 4-4-5):** el grupo de 5 juega 5 partidos internos (en cada uno descansa uno)
     y cada jugador es pareja de todos los demás una vez. La vuelta dura 5 semanas y cada jugador descansa una.
 - Resultados por sets (6-4, 7-5, 7-6…); el tercer set se juega completo.
-- Ganar 2-0: **3 puntos** para el ganador y 0 para el perdedor. Ganar 2-1: **2 y 1 puntos**.
-- Clasificación: puntos → diferencia de juegos → juegos ganados → sorteo.
+- Cada victoria vale **1 punto**, da igual ganar 2-0 o 2-1 (victorias y derrotas, como en la NFL).
+- Clasificación: victorias → diferencia de sets → diferencia de juegos → juegos ganados → sorteo.
   Los partidos cruzados cuentan para la clasificación del grupo de cada jugador.
 - Al cerrar la vuelta sube el primero y baja el último de cada grupo.
 
@@ -38,14 +38,26 @@ supabase/       esquema de base de datos y permisos
 ## Puesta en marcha de Supabase
 
 1. Crea un proyecto en [supabase.com](https://supabase.com).
-2. En **SQL Editor**, ejecuta `supabase/migrations/001_init.sql`.
+2. En **SQL Editor**, ejecuta por orden `supabase/migrations/001_init.sql` y `002_funciones.sql`.
 3. Copia `.env.example` a `.env.local` y rellena la URL y la clave *publishable*
    (Project Settings → API). **No uses nunca la clave `service_role` en la web.**
-4. Para darte de alta como administrador, entra una vez en la web con tu email y después ejecuta en el SQL Editor:
+4. En **Authentication → URL Configuration**, pon como *Site URL* `https://<usuario>.github.io/ligapadel/`
+   y añade como *Redirect URLs* `https://<usuario>.github.io/ligapadel/**` y `http://localhost:5173/ligapadel/**`.
+5. Para darte de alta como administrador, entra una vez en la web (Admin → tu email) y después ejecuta en el SQL Editor:
    ```sql
    insert into public.admins (user_id, nombre)
    select id, 'Tu nombre' from auth.users where email = 'tu@email.com';
    ```
+6. Cuando estén dados de alta todos los admins, desactiva **Authentication → Sign In / Providers →
+   Allow new users to sign up**.
+
+## Uso
+
+1. **Admin → Jugadores:** da de alta a todos.
+2. **Admin → Nueva vuelta:** reparte los jugadores en A, B y C, genera el calendario y guárdalo.
+3. **Calendario:** mete resultados o edita partidos (cambiar de semana, sustituir jugadores, aplazar).
+   La web avisa si un cambio rompe alguna regla.
+4. **Admin → Cerrar vuelta:** congela la vuelta y propone los grupos de la siguiente con los ascensos y descensos.
 
 ## Despliegue en GitHub Pages
 
