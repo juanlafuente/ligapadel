@@ -1,4 +1,4 @@
-export const LEAGUE_NAME = 'Liga Pádel Tui';
+export const LEAGUE_NAME = 'La Liga Matilda';
 
 /** Pelota de pádel: el logo de la liga. */
 export function Logo({ size = 40 }: { size?: number }) {
