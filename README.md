@@ -18,7 +18,7 @@ calendario generado automáticamente con parejas que rotan y clasificación indi
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173/ligapadel/
+npm run dev      # http://localhost:5173/laligamatilda/
 npm test         # tests de la lógica (src/domain)
 npm run build
 ```
@@ -38,8 +38,8 @@ supabase/       esquema de base de datos y permisos
 2. En **SQL Editor**, ejecuta por orden `supabase/migrations/001_init.sql` y `002_funciones.sql`.
 3. Copia `.env.example` a `.env.local` y rellena la URL y la clave *publishable*
    (Project Settings → API). **No uses nunca la clave `service_role` en la web.**
-4. En **Authentication → URL Configuration**, pon como *Site URL* `https://<usuario>.github.io/ligapadel/`
-   y añade como *Redirect URLs* `https://<usuario>.github.io/ligapadel/**` y `http://localhost:5173/ligapadel/**`.
+4. En **Authentication → URL Configuration**, pon como *Site URL* `https://<usuario>.github.io/laligamatilda/`
+   y añade como *Redirect URLs* `https://<usuario>.github.io/laligamatilda/**` y `http://localhost:5173/laligamatilda/**`.
 5. Para darte de alta como administrador, entra una vez en la web (Admin → tu email) y después ejecuta en el SQL Editor:
    ```sql
    insert into public.admins (user_id, nombre)
@@ -61,4 +61,4 @@ supabase/       esquema de base de datos y permisos
 1. En el repositorio: **Settings → Pages → Source: GitHub Actions**.
 2. En **Settings → Secrets and variables → Actions → Variables**, crea `VITE_SUPABASE_URL` y
    `VITE_SUPABASE_PUBLISHABLE_KEY` (son públicas por diseño; los permisos los controla la base de datos).
-3. Cada push a `main` pasa los tests, compila y publica en `https://<usuario>.github.io/ligapadel/`.
+3. Cada push a `main` pasa los tests, compila y publica en `https://<usuario>.github.io/laligamatilda/`.
