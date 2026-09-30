@@ -35,6 +35,8 @@ describe('league', () => {
       match('2', ['b3', 'b4'], ['b1', 'b2'], [[6, 1], [6, 1]]),
     ];
     const next = proposeNextGroups({ groups, matches });
+    const withFinal = proposeNextGroups({ groups, matches, finalRanking: new Map([['A', ['a4', 'a3', 'a2', 'a1']], ['B', ['b1', 'b2', 'b3', 'b4']]]) });
+    expect([...withFinal[0].players].sort()).toEqual(['a3', 'a4', 'b1', 'b2']);
     expect([...next[0].players].sort()).toEqual(['a1', 'a2', 'b3', 'b4']);
     expect([...next[1].players].sort()).toEqual(['a3', 'a4', 'b1', 'b2']);
   });

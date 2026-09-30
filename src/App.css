@@ -222,6 +222,68 @@ button.link { border: 0; background: none; padding: 0; color: var(--court); font
 .segmented button.selected { background: var(--court); border-color: var(--court); color: var(--on-court); font-weight: 600; }
 .signedIn { text-align: center; }
 
+/* ---------- Subpestañas ---------- */
+.subTabs { display: flex; background: var(--soft); border-radius: 999px; padding: 4px; margin-bottom: 14px; }
+.subTabs button { flex: 1; border: 0; background: none; border-radius: 999px; padding: 7px 12px; font-weight: 600; color: var(--muted); }
+.subTabs button.active { background: var(--card); color: var(--court); box-shadow: 0 1px 3px rgb(0 0 0 / .12); }
+@media (prefers-color-scheme: dark) { .subTabs button.active { color: var(--ball); } }
+.seasonPicker { width: 100%; margin-bottom: 12px; }
+
+/* ---------- Temporada ---------- */
+.champion { display: flex; align-items: center; gap: 14px; background: var(--gold-bg); border-color: var(--gold-line); }
+.championTrophy { font-size: 2.2rem; }
+.champion div { display: flex; flex-direction: column; }
+.champion small { color: var(--gold); font-weight: 700; text-transform: uppercase; font-size: .7rem; letter-spacing: .6px; }
+.champion strong { font-size: 1.2rem; }
+.seasonCell { display: inline-block; min-width: 28px; padding: 2px 6px; border-radius: 6px; font-weight: 700; background: var(--tone-bg); color: var(--tone); }
+.pointsTable { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.pointsTable th, .pointsTable td { padding: 6px 4px; text-align: center; border-top: 1px solid var(--border); }
+.pointsTable th { border-top: 0; color: var(--muted); font-size: .72rem; }
+.pointsTable .left { text-align: left; }
+
+/* ---------- Estadísticas ---------- */
+.playerLink { color: inherit; text-decoration: none; }
+.playerLink:hover .playerCell span:last-child, .leaderName .playerLink:hover { text-decoration: underline; }
+.backLink { display: inline-block; margin-bottom: 10px; color: var(--court); font-weight: 600; text-decoration: none; }
+@media (prefers-color-scheme: dark) { .backLink { color: var(--ball); } }
+.delta { font-weight: 700; font-size: .82rem; font-variant-numeric: tabular-nums; }
+.delta.up { color: var(--up); }
+.delta.down { color: var(--down); }
+.emptyLine.inCard { border: 0; border-radius: 0; }
+.explainer summary { cursor: pointer; font-weight: 600; }
+.explainer ul { margin: 10px 0 0; padding-left: 20px; color: var(--muted); font-size: .9rem; }
+.explainer li { margin-bottom: 6px; }
+
+.playerHeader { display: flex; align-items: center; gap: 14px; }
+.playerHeader h2 { margin: 0 0 4px; }
+.avatarLarge .avatar { width: 56px; height: 56px; font-size: 1.1rem; }
+.playerRating { margin-left: auto; text-align: right; display: flex; flex-direction: column; }
+.playerRating strong { font-size: 1.6rem; color: var(--court); font-variant-numeric: tabular-nums; }
+@media (prefers-color-scheme: dark) { .playerRating strong { color: var(--ball); } }
+.playerRating small { color: var(--muted); font-size: .72rem; }
+
+.trajectory { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.trajectoryStep { display: flex; flex-direction: column; align-items: center; min-width: 52px; padding: 6px 4px; border-radius: 10px; background: var(--tone-bg); border: 1px solid var(--tone-line); }
+.trajectoryStep small { font-size: .65rem; color: var(--muted); }
+.trajectoryStep strong { color: var(--tone); font-size: .85rem; }
+.trajectoryStep.provisional { border-style: dashed; opacity: .75; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.tile { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.tile small { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .5px; }
+.tile strong { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.tile span { color: var(--muted); font-size: .76rem; }
+.duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.highlight { display: flex; flex-direction: column; gap: 6px; margin-bottom: 0; }
+.highlight small { color: var(--muted); font-weight: 600; }
+
+/* ---------- Cierre de vuelta con empates ---------- */
+.tieGroup { margin-bottom: 10px; }
+.tieList { margin: 0; padding-left: 22px; }
+.tieList li { padding: 4px 0; }
+.tieList li span { margin-right: 8px; }
+.tieList button { padding: 2px 10px; }
+
 /* ---------- Navegación ---------- */
 .bottomNav {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 5;
@@ -229,9 +291,9 @@ button.link { border: 0; background: none; padding: 0; color: var(--court); font
   background: var(--card); border-top: 1px solid var(--border);
   padding: 6px 0 calc(8px + env(safe-area-inset-bottom));
 }
-.bottomNav button { background: none; border: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 2px 8px; color: var(--muted); }
-.bottomNav button span { font-size: 1.2rem; padding: 1px 14px; border-radius: 999px; }
-.bottomNav button small { font-size: .68rem; }
+.bottomNav button { flex: 1; min-width: 0; background: none; border: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 2px 2px; color: var(--muted); }
+.bottomNav button span { font-size: 1.2rem; padding: 1px 12px; border-radius: 999px; }
+.bottomNav button small { font-size: .64rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bottomNav button.active { color: var(--court); font-weight: 700; }
 .bottomNav button.active span { background: var(--ball); }
 @media (prefers-color-scheme: dark) { .bottomNav button.active { color: var(--ball); } .bottomNav button.active span { background: var(--court); } }

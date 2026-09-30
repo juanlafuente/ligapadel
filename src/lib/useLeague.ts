@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { fetchPlayers, fetchRoundData, fetchRounds, type Player, type Round, type RoundData } from './db';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { fetchHistory, fetchPlayers, fetchRounds, fetchSeasons, type Player, type Round, type RoundData, type Season } from './db';
 import { errorMessage } from './league';
 import { supabase } from './supabase';
 
@@ -8,7 +8,11 @@ export interface League {
   error: string | null;
   players: Player[];
   /** Ordenadas de la más reciente a la más antigua. */
+  seasons: Season[];
+  /** Ordenadas de la más reciente a la más antigua. */
   rounds: Round[];
+  /** Datos de todas las vueltas, en el mismo orden que `rounds`. */
+  history: RoundData[];
   selectedRoundId: string | null;
   selectRound: (id: string) => void;
   roundData: RoundData | null;
@@ -21,17 +25,21 @@ export function useLeague(): League {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [seasons, setSeasons] = useState<Season[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
+  const [history, setHistory] = useState<RoundData[]>([]);
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
-  const [roundData, setRoundData] = useState<RoundData | null>(null);
 
   const refresh = useCallback(async (roundId?: string) => {
     if (!supabase) return;
     try {
       setError(null);
-      const [nextPlayers, nextRounds] = await Promise.all([fetchPlayers(), fetchRounds()]);
+      const [nextPlayers, nextSeasons, nextRounds] = await Promise.all([fetchPlayers(), fetchSeasons(), fetchRounds()]);
+      const nextHistory = await fetchHistory(nextRounds);
       setPlayers(nextPlayers);
+      setSeasons(nextSeasons);
       setRounds(nextRounds);
+      setHistory(nextHistory);
       setSelectedRoundId((current) => {
         const wanted = roundId ?? current;
         if (wanted && nextRounds.some((round) => round.id === wanted)) return wanted;
@@ -48,25 +56,24 @@ export function useLeague(): League {
     void refresh();
   }, [refresh]);
 
-  useEffect(() => {
-    const round = rounds.find((r) => r.id === selectedRoundId);
-    if (!round) {
-      setRoundData(null);
-      return;
-    }
-    let cancelled = false;
-    fetchRoundData(round)
-      .then((data) => !cancelled && setRoundData(data))
-      .catch((e) => !cancelled && setError(errorMessage(e)));
-    return () => {
-      cancelled = true;
-    };
-  }, [rounds, selectedRoundId]);
+  const roundData = useMemo(() => history.find((data) => data.round.id === selectedRoundId) ?? null, [history, selectedRoundId]);
 
   const nameOf = useCallback(
     (playerId: string) => players.find((player) => player.id === playerId)?.nombre ?? '¿?',
     [players],
   );
 
-  return { loading, error, players, rounds, selectedRoundId, selectRound: setSelectedRoundId, roundData, nameOf, refresh };
+  return {
+    loading,
+    error,
+    players,
+    seasons,
+    rounds,
+    history,
+    selectedRoundId,
+    selectRound: setSelectedRoundId,
+    roundData,
+    nameOf,
+    refresh,
+  };
 }

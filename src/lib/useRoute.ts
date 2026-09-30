@@ -1,23 +1,32 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export type Route = 'inicio' | 'clasificacion' | 'calendario' | 'admin';
-const ROUTES: Route[] = ['inicio', 'clasificacion', 'calendario', 'admin'];
+export type Route = 'inicio' | 'clasificacion' | 'calendario' | 'estadisticas' | 'jugador' | 'admin';
+const ROUTES: Route[] = ['inicio', 'clasificacion', 'calendario', 'estadisticas', 'jugador', 'admin'];
 
-function parse(hash: string): Route {
-  const route = hash.replace(/^#\/?/, '').split(/[/?]/)[0];
-  return ROUTES.includes(route as Route) ? (route as Route) : 'inicio';
+export interface Location {
+  route: Route;
+  /** Parámetro opcional, p. ej. el id del jugador en #/jugador/<id>. */
+  param: string | null;
+}
+
+function parse(hash: string): Location {
+  const [route, param] = hash.replace(/^#\/?/, '').split('?')[0].split('/');
+  return ROUTES.includes(route as Route) ? { route: route as Route, param: param || null } : { route: 'inicio', param: null };
 }
 
 /** Navegación por #/ruta, que funciona en GitHub Pages sin configurar el servidor. */
-export function useRoute(): [Route, (route: Route) => void] {
-  const [route, setRoute] = useState(() => parse(window.location.hash));
+export function useRoute(): [Location, (route: Route, param?: string) => void] {
+  const [location, setLocation] = useState(() => parse(window.location.hash));
   useEffect(() => {
-    const onChange = () => setRoute(parse(window.location.hash));
+    const onChange = () => {
+      setLocation(parse(window.location.hash));
+      window.scrollTo(0, 0);
+    };
     window.addEventListener('hashchange', onChange);
     return () => window.removeEventListener('hashchange', onChange);
   }, []);
-  const navigate = useCallback((next: Route) => {
-    window.location.hash = `/${next}`;
+  const navigate = useCallback((route: Route, param?: string) => {
+    window.location.hash = param ? `/${route}/${param}` : `/${route}`;
   }, []);
-  return [route, navigate];
+  return [location, navigate];
 }

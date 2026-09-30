@@ -1,5 +1,6 @@
 import { Avatar, LEAGUE_NAME, Logo } from '../components/Brand';
 import { MatchCard } from '../components/MatchCard';
+import { PlayerLink } from '../components/PlayerLink';
 import { PLAY_WEEKS, RECOVERY_WEEK } from '../domain/schedule';
 import type { RoundData } from '../lib/db';
 import { categoryOf, latestResults, roundProgress, roundStandings } from '../lib/league';
@@ -95,7 +96,9 @@ export function HomePage({ data, nameOf, isAdmin, navigate }: Props) {
                   </span>
                   {hasPlayed ? (
                     <>
-                      <span className="leaderName">{nameOf(leader.player)}</span>
+                      <span className="leaderName">
+                        <PlayerLink id={leader.player}>{nameOf(leader.player)}</PlayerLink>
+                      </span>
                       <span className="leaderRecord">
                         {leader.won}-{leader.lost}
                       </span>

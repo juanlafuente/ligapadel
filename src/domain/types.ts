@@ -26,3 +26,16 @@ export interface SetScore {
   pair1: number;
   pair2: number;
 }
+
+/** Partido con resultado, con lo necesario para ordenarlo en el tiempo (estadísticas y Elo). */
+export interface HistoryMatch {
+  id: string;
+  /** Número de vuelta. */
+  round: number;
+  week: number;
+  /** Momento en que se guardó el resultado; desempata dentro de la misma semana. */
+  playedAt: string;
+  pair1: Pair;
+  pair2: Pair;
+  sets: readonly SetScore[];
+}

@@ -1,7 +1,8 @@
 import { nextGroups } from '../domain/promotion';
 import { validateSets } from '../domain/scoring';
 import { groupStandings, type PlayedMatch, type StandingRow } from '../domain/standings';
-import type { Group, GroupId } from '../domain/types';
+import type { SeasonRound } from '../domain/season';
+import type { Group, GroupId, HistoryMatch, PlayerId } from '../domain/types';
 import type { RoundData, RoundMatch } from './db';
 
 export const GROUP_IDS: GroupId[] = ['A', 'B', 'C'];
@@ -19,11 +20,55 @@ export function roundStandings(data: Pick<RoundData, 'groups' | 'matches'>): Map
   return new Map(data.groups.map((group) => [group.id, groupStandings(group.players, played)]));
 }
 
+type RankingSource = Pick<RoundData, 'groups' | 'matches'> & { finalRanking?: RoundData['finalRanking'] };
+
+/** Orden de cada grupo: el guardado al cerrar la vuelta o, si no lo hay, el de la clasificación actual. */
+export function groupOrder(data: RankingSource): Map<GroupId, PlayerId[]> {
+  if (data.finalRanking) return data.finalRanking;
+  return new Map([...roundStandings(data)].map(([id, rows]) => [id, rows.map((row) => row.player)]));
+}
+
 /** Grupos de la siguiente vuelta aplicando los ascensos y descensos. */
-export function proposeNextGroups(data: Pick<RoundData, 'groups' | 'matches'>): Group[] {
-  const standings = roundStandings(data);
-  const ranking = new Map([...standings].map(([id, rows]) => [id, rows.map((row) => row.player)]));
-  return nextGroups(data.groups, ranking, PROMOTIONS);
+export function proposeNextGroups(data: RankingSource, order: ReadonlyMap<GroupId, readonly PlayerId[]> = groupOrder(data)): Group[] {
+  return nextGroups(data.groups, order, PROMOTIONS);
+}
+
+/** Todos los partidos con resultado, para Elo y estadísticas. */
+export function historyMatches(history: readonly RoundData[]): HistoryMatch[] {
+  return history.flatMap((data) =>
+    playedMatches(data.matches).map((match) => {
+      const m = match as RoundMatch;
+      return { id: m.id, round: data.round.numero, week: m.week, playedAt: m.updatedAt, pair1: m.pair1, pair2: m.pair2, sets: m.sets };
+    }),
+  );
+}
+
+/** Vueltas cerradas de una temporada, con su orden final, para el ranking de temporada. */
+export function seasonRounds(history: readonly RoundData[], seasonId: string): SeasonRound[] {
+  return history
+    .filter((data) => data.round.temporada_id === seasonId && data.round.estado === 'cerrada')
+    .map((data) => ({ round: data.round.numero, ranking: groupOrder(data) }));
+}
+
+export interface TrajectoryStep {
+  round: number;
+  group: GroupId;
+  position: number;
+  /** false si la vuelta sigue en curso (posición provisional). */
+  final: boolean;
+}
+
+/** Grupo y posición de un jugador en cada vuelta, de la primera a la última. */
+export function trajectory(player: PlayerId, history: readonly RoundData[]): TrajectoryStep[] {
+  return [...history]
+    .sort((a, b) => a.round.numero - b.round.numero)
+    .flatMap((data) => {
+      for (const [group, players] of groupOrder(data)) {
+        const i = players.indexOf(player);
+        if (i >= 0) return [{ round: data.round.numero, group, position: i + 1, final: data.round.estado === 'cerrada' }];
+      }
+      return [];
+    });
 }
 
 export function formatSets(match: Pick<RoundMatch, 'sets'>): string {

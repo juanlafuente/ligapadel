@@ -2,41 +2,86 @@ import { useEffect, useMemo, useState } from 'react';
 import { checkGroups, generateRound } from '../domain/schedule';
 import { MatchCard } from './MatchCard';
 import type { Group, ScheduledMatch } from '../domain/types';
-import { createRound, fetchRoundData, setRoundState, type RoundData } from '../lib/db';
-import { errorMessage, GROUP_IDS, PROMOTIONS, proposeNextGroups } from '../lib/league';
+import { closeRound, createRound, startSeason, type RoundData } from '../lib/db';
+import { categoryOf, errorMessage, GROUP_IDS, groupOrder, PROMOTIONS, proposeNextGroups, roundStandings } from '../lib/league';
 import type { League } from '../lib/useLeague';
 
-/** Cierre de la vuelta en curso o creación de la siguiente. */
+/** Temporada, cierre de la vuelta en curso o creación de la siguiente. */
 export function RoundAdmin({ league }: { league: League }) {
-  const current = league.rounds.find((r) => r.estado === 'en_curso');
-  const last = league.rounds[0];
-  const [data, setData] = useState<RoundData | null>(null);
+  const current = league.history.find((data) => data.round.estado === 'en_curso');
+  const last = league.history[0];
+  return (
+    <>
+      <SeasonAdmin league={league} roundInProgress={current !== undefined} />
+      {current ? <CloseRound data={current} league={league} /> : <NewRound league={league} previous={last?.round.estado === 'cerrada' ? last : null} />}
+    </>
+  );
+}
+
+function SeasonAdmin({ league, roundInProgress }: { league: League; roundInProgress: boolean }) {
   const [error, setError] = useState<string | null>(null);
+  const season = league.seasons.find((s) => s.estado === 'en_curso');
+  if (!season) {
+    return (
+      <section className="card">
+        <h2>Temporada</h2>
+        <p className="warn">No hay ninguna temporada en curso. ¿Has ejecutado el SQL 003_temporadas.sql en Supabase?</p>
+      </section>
+    );
+  }
+  const closedRounds = league.rounds.filter((r) => r.temporada_id === season.id && r.estado === 'cerrada').length;
 
-  // Datos de la vuelta en curso (para cerrarla) o de la última cerrada (para proponer grupos).
-  const reference = current ?? (last?.estado === 'cerrada' ? last : undefined);
-  useEffect(() => {
-    setData(null);
-    if (!reference) return;
-    let cancelled = false;
-    fetchRoundData(reference)
-      .then((d) => !cancelled && setData(d))
-      .catch((e) => !cancelled && setError(errorMessage(e)));
-    return () => {
-      cancelled = true;
-    };
-  }, [reference]);
+  const start = async () => {
+    if (!window.confirm(`¿Terminar la temporada ${season.numero} (${closedRounds} vueltas) y empezar la ${season.numero + 1}? El ranking de temporada vuelve a cero; el histórico se conserva.`)) return;
+    setError(null);
+    try {
+      await startSeason();
+      await league.refresh();
+    } catch (e) {
+      setError(errorMessage(e));
+    }
+  };
 
-  if (error) return <p className="error">{error}</p>;
-  if (reference && !data) return <p className="muted">Cargando vuelta…</p>;
-  if (current && data) return <CloseRound data={data} league={league} />;
-  return <NewRound league={league} previous={data} />;
+  return (
+    <section className="card">
+      <h2>Temporada {season.numero}</h2>
+      <p className="muted">
+        {closedRounds} {closedRounds === 1 ? 'vuelta cerrada' : 'vueltas cerradas'} en esta temporada.
+        {roundInProgress && ' Cierra la vuelta en curso para poder empezar otra temporada.'}
+      </p>
+      {error && <p className="error">{error}</p>}
+      <button className="ghost" onClick={start} disabled={roundInProgress || closedRounds === 0}>
+        Empezar temporada nueva
+      </button>
+    </section>
+  );
 }
 
 function CloseRound({ data, league }: { data: RoundData; league: League }) {
   const [error, setError] = useState<string | null>(null);
+  const standings = useMemo(() => roundStandings(data), [data]);
+  const [order, setOrder] = useState(() => groupOrder(data));
+  useEffect(() => setOrder(groupOrder(data)), [data]);
+
+  // Bloques de empate total: jugadores con la misma clave pueden intercambiarse (sorteo).
+  const tieBlock = useMemo(() => {
+    const block = new Map<string, number>();
+    let n = 0;
+    for (const rows of standings.values()) {
+      rows.forEach((row) => {
+        if (!row.tiedWithPrevious) n += 1;
+        block.set(row.player, n);
+      });
+    }
+    return block;
+  }, [standings]);
+  const tiedGroups = data.groups.filter((g) => {
+    const blocks = g.players.map((p) => tieBlock.get(p));
+    return new Set(blocks).size < blocks.length;
+  });
+
   const pending = data.matches.filter((m) => m.estado !== 'jugado').length;
-  const next = proposeNextGroups(data);
+  const next = proposeNextGroups(data, order);
   const moves = next.flatMap((group) =>
     group.players
       .filter((p) => !data.groups.find((g) => g.id === group.id)!.players.includes(p))
@@ -46,11 +91,19 @@ function CloseRound({ data, league }: { data: RoundData; league: League }) {
       }),
   );
 
+  const swap = (groupId: string, i: number) =>
+    setOrder((current) => {
+      const players = [...current.get(groupId)!];
+      [players[i], players[i + 1]] = [players[i + 1], players[i]];
+      return new Map(current).set(groupId, players);
+    });
+
   const close = async () => {
     const warning = pending > 0 ? `\n\nOjo: quedan ${pending} partidos sin resultado y no contarán.` : '';
     if (!window.confirm(`¿Cerrar la vuelta ${data.round.numero}? Ya no se podrán cambiar sus resultados.${warning}`)) return;
+    setError(null);
     try {
-      await setRoundState(data.round.id, 'cerrada');
+      await closeRound(data.round.id, order);
       await league.refresh(data.round.id);
     } catch (e) {
       setError(errorMessage(e));
@@ -63,7 +116,37 @@ function CloseRound({ data, league }: { data: RoundData; league: League }) {
       <p>
         {data.matches.length - pending} de {data.matches.length} partidos jugados.
       </p>
-      <p className="muted">Si se cerrara ahora:</p>
+
+      {tiedGroups.length > 0 && (
+        <>
+          <p className="warn">Hay empates totales. Ordénalos según el sorteo antes de cerrar:</p>
+          {tiedGroups.map((group) => {
+            const players = order.get(group.id)!;
+            return (
+              <div key={group.id} className="tieGroup">
+                <h4 className="sectionTitle">Grupo {group.id} · {categoryOf(group.id).name}</h4>
+                <ol className="tieList">
+                  {players.map((p, i) => {
+                    const canSwap = i < players.length - 1 && tieBlock.get(p) === tieBlock.get(players[i + 1]);
+                    return (
+                      <li key={p}>
+                        <span>{league.nameOf(p)}</span>
+                        {canSwap && (
+                          <button className="ghost" onClick={() => swap(group.id, i)} aria-label={`Intercambiar con ${league.nameOf(players[i + 1])}`}>
+                            ⇅
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      <p className="muted">Si se cierra ahora:</p>
       <ul className="moves">
         {moves
           .sort((a, b) => Number(b.up) - Number(a.up) || a.from.localeCompare(b.from))

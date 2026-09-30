@@ -13,6 +13,26 @@ calendario generado automáticamente con parejas que rotan y clasificación indi
 - Cada victoria vale **1 punto**, da igual ganar 2-0 o 2-1 (victorias y derrotas, como en la NFL).
 - Clasificación: victorias → diferencia de sets → diferencia de juegos → juegos ganados → sorteo.
 - Al cerrar la vuelta **suben los 2 primeros y bajan los 2 últimos** entre Oro y Plata y entre Plata y Bronce.
+  Si hay empate total, al cerrar la vuelta se indica el orden según el sorteo; la posición final queda guardada.
+
+### Temporada
+
+- Cada vuelta cerrada da **puntos de temporada** según el grupo y la posición final:
+
+  | Grupo | 1º | 2º | 3º | 4º |
+  |---|---|---|---|---|
+  | Oro | 12 | 10 | 8 | 6 |
+  | Plata | 9 | 7 | 5 | 3 |
+  | Bronce | 6 | 4 | 2 | 0 |
+
+- A igualdad de puntos gana quien sumó más en la última vuelta.
+- Desde Admin se empieza una temporada nueva (p. ej. cada 4 o 5 vueltas); las anteriores se conservan.
+
+### Índice Matilda
+
+- Rating tipo Elo para parejas: todos empiezan en 1000, la fuerza de una pareja es la media de sus dos
+  jugadores y el cambio depende de lo esperado que fuera el resultado (máximo 32 por partido, +20 % si se gana 2-0).
+- Es histórico: no se reinicia con las temporadas.
 
 ## Desarrollo
 
@@ -35,7 +55,7 @@ supabase/       esquema de base de datos y permisos
 ## Puesta en marcha de Supabase
 
 1. Crea un proyecto en [supabase.com](https://supabase.com).
-2. En **SQL Editor**, ejecuta por orden `supabase/migrations/001_init.sql` y `002_funciones.sql`.
+2. En **SQL Editor**, ejecuta por orden `001_init.sql`, `002_funciones.sql` y `003_temporadas.sql` (carpeta `supabase/migrations`).
 3. Copia `.env.example` a `.env.local` y rellena la URL y la clave *publishable*
    (Project Settings → API). **No uses nunca la clave `service_role` en la web.**
 4. En **Authentication → URL Configuration**, pon como *Site URL* `https://<usuario>.github.io/laligamatilda/`

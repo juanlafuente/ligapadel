@@ -2,6 +2,8 @@ import { Logo } from './components/Brand';
 import { AdminPage } from './pages/AdminPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { HomePage } from './pages/HomePage';
+import { PlayerPage } from './pages/PlayerPage';
+import { StatsPage } from './pages/StatsPage';
 import { StandingsPage } from './pages/StandingsPage';
 import { supabase } from './lib/supabase';
 import { useAuth } from './lib/useAuth';
@@ -12,13 +14,16 @@ const TABS: { route: Route; icon: string; label: string }[] = [
   { route: 'inicio', icon: '🏠', label: 'Inicio' },
   { route: 'clasificacion', icon: '🏆', label: 'Clasificación' },
   { route: 'calendario', icon: '🎾', label: 'Calendario' },
+  { route: 'estadisticas', icon: '📊', label: 'Estadísticas' },
   { route: 'admin', icon: '⚙️', label: 'Admin' },
 ];
 
 const ROUND_STATE_LABEL = { borrador: 'borrador', en_curso: 'en curso', cerrada: 'cerrada' } as const;
 
 export function App() {
-  const [route, navigate] = useRoute();
+  const [{ route, param }, navigate] = useRoute();
+  // La ficha de jugador cuelga de Estadísticas.
+  const tab = route === 'jugador' ? 'estadisticas' : route;
   const auth = useAuth();
   const league = useLeague();
 
@@ -38,7 +43,7 @@ export function App() {
     );
   }
 
-  const title = TABS.find((tab) => tab.route === route)!.label;
+  const title = route === 'jugador' ? 'Jugador' : TABS.find((t) => t.route === tab)!.label;
   const showRoundPicker = league.rounds.length > 1 && (route === 'clasificacion' || route === 'calendario');
 
   return (
@@ -67,7 +72,9 @@ export function App() {
           <HomePage data={league.roundData} nameOf={league.nameOf} isAdmin={auth.isAdmin === true} navigate={navigate} />
         ) : (
           <div className="page">
-            {route === 'clasificacion' && <StandingsPage data={league.roundData} nameOf={league.nameOf} />}
+            {route === 'clasificacion' && <StandingsPage league={league} />}
+            {route === 'estadisticas' && <StatsPage league={league} />}
+            {route === 'jugador' && <PlayerPage league={league} playerId={param} />}
             {route === 'calendario' && (
               <CalendarPage
                 data={league.roundData}
@@ -83,10 +90,10 @@ export function App() {
       </main>
 
       <nav className="bottomNav">
-        {TABS.map((tab) => (
-          <button key={tab.route} className={route === tab.route ? 'active' : undefined} onClick={() => navigate(tab.route)}>
-            <span aria-hidden="true">{tab.icon}</span>
-            <small>{tab.label}</small>
+        {TABS.map((t) => (
+          <button key={t.route} className={tab === t.route ? 'active' : undefined} onClick={() => navigate(t.route)}>
+            <span aria-hidden="true">{t.icon}</span>
+            <small>{t.label}</small>
           </button>
         ))}
       </nav>
