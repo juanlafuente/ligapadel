@@ -3,15 +3,17 @@ import { Avatar } from '../components/Brand';
 import { MatchCard } from '../components/MatchCard';
 import { PlayerLink } from '../components/PlayerLink';
 import { computeElo, ELO_START } from '../domain/elo';
+import { medalTable } from '../domain/medals';
 import { MIN_SHARED_MATCHES, playerStats, type HeadToHead } from '../domain/playerStats';
 import type { RoundMatch } from '../lib/db';
-import { categoryOf, historyMatches, trajectory } from '../lib/league';
+import { categoryOf, closedRounds, historyMatches, trajectory } from '../lib/league';
 import type { League } from '../lib/useLeague';
 import { Delta } from './StatsPage';
 
 export function PlayerPage({ league, playerId }: { league: League; playerId: string | null }) {
   const matches = useMemo(() => historyMatches(league.history), [league.history]);
   const elo = useMemo(() => computeElo(matches), [matches]);
+  const medals = useMemo(() => medalTable(closedRounds(league.history)), [league.history]);
   const player = league.players.find((p) => p.id === playerId);
 
   if (!player) {
@@ -40,6 +42,7 @@ export function PlayerPage({ league, playerId }: { league: League; playerId: str
     .map((m) => allMatches.find((x) => x.match.id === m.id)!)
     .filter(Boolean);
 
+  const myMedals = medals.find((row) => row.player === player.id);
   const pct = stats.played ? Math.round((stats.won / stats.played) * 100) : 0;
 
   return (
@@ -68,7 +71,14 @@ export function PlayerPage({ league, playerId }: { league: League; playerId: str
 
       {steps.length > 0 && (
         <section className="section">
-          <h2 className="sectionTitle">Trayectoria</h2>
+          <h2 className="sectionTitle">
+            Trayectoria
+            {myMedals && (
+              <span className="medalSummary" title={`Medallero: ${myMedals.position}º`}>
+                🥇{myMedals.gold} 🥈{myMedals.silver} 🥉{myMedals.bronze} ⭐{myMedals.titles}
+              </span>
+            )}
+          </h2>
           <div className="trajectory">
             {steps.map((step) => (
               <span key={step.round} className={`trajectoryStep tone-${categoryOf(step.group).tone}${step.final ? '' : ' provisional'}`} title={step.final ? undefined : 'Vuelta en curso (provisional)'}>

@@ -43,11 +43,16 @@ export function historyMatches(history: readonly RoundData[]): HistoryMatch[] {
   );
 }
 
-/** Vueltas cerradas de una temporada, con su orden final, para el ranking de temporada. */
-export function seasonRounds(history: readonly RoundData[], seasonId: string): SeasonRound[] {
+/** Vueltas cerradas con su orden final (de todas las temporadas, o de una si se indica). */
+export function closedRounds(history: readonly RoundData[], seasonId?: string): SeasonRound[] {
   return history
-    .filter((data) => data.round.temporada_id === seasonId && data.round.estado === 'cerrada')
+    .filter((data) => data.round.estado === 'cerrada' && (seasonId === undefined || data.round.temporada_id === seasonId))
     .map((data) => ({ round: data.round.numero, ranking: groupOrder(data) }));
+}
+
+/** Vueltas cerradas de una temporada, para el ranking de temporada. */
+export function seasonRounds(history: readonly RoundData[], seasonId: string): SeasonRound[] {
+  return closedRounds(history, seasonId);
 }
 
 export interface TrajectoryStep {

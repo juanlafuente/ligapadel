@@ -1,11 +1,99 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Avatar } from '../components/Brand';
 import { PlayerLink } from '../components/PlayerLink';
 import { computeElo, ELO_K, ELO_START, SWEEP_BONUS } from '../domain/elo';
-import { historyMatches } from '../lib/league';
+import { medalTable } from '../domain/medals';
+import { closedRounds, historyMatches } from '../lib/league';
 import type { League } from '../lib/useLeague';
 
+type Tab = 'medallero' | 'indice';
+
 export function StatsPage({ league }: { league: League }) {
+  const [tab, setTab] = useState<Tab>('medallero');
+  return (
+    <>
+      <div className="subTabs" role="tablist">
+        <button role="tab" aria-selected={tab === 'medallero'} className={tab === 'medallero' ? 'active' : undefined} onClick={() => setTab('medallero')}>
+          Medallero
+        </button>
+        <button role="tab" aria-selected={tab === 'indice'} className={tab === 'indice' ? 'active' : undefined} onClick={() => setTab('indice')}>
+          Índice Matilda
+        </button>
+      </div>
+      {tab === 'medallero' ? <MedalTable league={league} /> : <EloRanking league={league} />}
+      <p className="legend">Pulsa en un jugador para ver su ficha.</p>
+    </>
+  );
+}
+
+function MedalTable({ league }: { league: League }) {
+  const rows = useMemo(() => medalTable(closedRounds(league.history)), [league.history]);
+  const rounds = league.history.filter((d) => d.round.estado === 'cerrada').length;
+
+  return (
+    <>
+      <section className="groupCard">
+        <header className="groupHead tone-gold">
+          <span className="medal">🏅</span>
+          <strong>Medallero</strong>
+          <small>
+            histórico · {rounds} {rounds === 1 ? 'vuelta' : 'vueltas'}
+          </small>
+        </header>
+        {rows.length === 0 ? (
+          <p className="emptyLine inCard">El medallero arranca cuando se cierre la primera vuelta.</p>
+        ) : (
+          <div className="tableWrap">
+            <table className="standings medalTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th className="left">Jugador</th>
+                  <th title="Vueltas en Oro">🥇</th>
+                  <th title="Vueltas en Plata">🥈</th>
+                  <th title="Vueltas en Bronce">🥉</th>
+                  <th title="Veces 1º de su grupo (entre paréntesis, en Oro)">⭐</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.player}>
+                    <td className="pos">
+                      {row.position}
+                      {row.tiedWithPrevious && <span title="Empate">=</span>}
+                    </td>
+                    <td className="left">
+                      <PlayerLink id={row.player}>
+                        <span className="playerCell">
+                          <Avatar id={row.player} name={league.nameOf(row.player)} />
+                          <span>{league.nameOf(row.player)}</span>
+                        </span>
+                      </PlayerLink>
+                    </td>
+                    <td className={row.gold ? 'wins' : 'zero'}>{row.gold}</td>
+                    <td className={row.silver ? undefined : 'zero'}>{row.silver}</td>
+                    <td className={row.bronze ? undefined : 'zero'}>{row.bronze}</td>
+                    <td className={row.titles ? undefined : 'zero'}>
+                      {row.titles}
+                      {row.goldTitles > 0 && <small className="goldTitles"> ({row.goldTitles})</small>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+      <p className="legend">
+        🥇 🥈 🥉 = vueltas jugadas en Oro, Plata y Bronce. ⭐ = veces 1º de su grupo; entre paréntesis, en Oro. Orden como en las
+        olimpiadas: más 🥇; a igualdad, más 🥈; luego más 🥉. Si siguen empatados, deciden los ⭐ en Oro y después la posición media.
+        Solo cuentan las vueltas cerradas.
+      </p>
+    </>
+  );
+}
+
+function EloRanking({ league }: { league: League }) {
   const { ratings, changes } = useMemo(() => computeElo(historyMatches(league.history)), [league.history]);
 
   const rows = league.players
@@ -84,7 +172,6 @@ export function StatsPage({ league }: { league: League }) {
         </ul>
       </details>
 
-      <p className="legend">Pulsa en un jugador para ver su ficha.</p>
     </>
   );
 }

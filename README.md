@@ -28,6 +28,12 @@ calendario generado automáticamente con parejas que rotan y clasificación indi
 - A igualdad de puntos gana quien sumó más en la última vuelta.
 - Desde Admin se empieza una temporada nueva (p. ej. cada 4 o 5 vueltas); las anteriores se conservan.
 
+### Medallero (histórico)
+
+- 🥇 🥈 🥉 = vueltas cerradas jugadas en Oro, Plata y Bronce; ⭐ = veces 1º de su grupo.
+- Orden como en las olimpiadas: más 🥇, luego más 🥈, luego más 🥉; si siguen empatados,
+  más ⭐ en Oro y después mejor posición media.
+
 ### Índice Matilda
 
 - Rating tipo Elo para parejas: todos empiezan en 1000, la fuerza de una pareja es la media de sus dos
