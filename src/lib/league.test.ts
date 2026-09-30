@@ -29,15 +29,14 @@ describe('league', () => {
     expect(roundStandings({ groups, matches }).get('A')![0]).toMatchObject({ points: 1, played: 1 });
   });
 
-  it('propone los grupos siguientes con 1 ascenso y 1 descenso', () => {
+  it('propone los grupos siguientes: suben los 2 primeros y bajan los 2 últimos', () => {
     const matches = [
       match('1', ['a1', 'a2'], ['a3', 'a4'], [[6, 1], [6, 1]]),
       match('2', ['b3', 'b4'], ['b1', 'b2'], [[6, 1], [6, 1]]),
     ];
     const next = proposeNextGroups({ groups, matches });
-    expect(next[0].players).toContain('b3');
-    expect(next[0].players).not.toContain(roundStandings({ groups, matches }).get('A')![3].player);
-    expect(next.map((g) => g.players.length)).toEqual([4, 4]);
+    expect([...next[0].players].sort()).toEqual(['a1', 'a2', 'b3', 'b4']);
+    expect([...next[1].players].sort()).toEqual(['a3', 'a4', 'b1', 'b2']);
   });
 
   it('formatea los sets', () => {

@@ -1,6 +1,6 @@
 import { Avatar } from '../components/Brand';
 import type { RoundData } from '../lib/db';
-import { categoryOf, groupMatches, roundStandings } from '../lib/league';
+import { categoryOf, groupMatches, PROMOTIONS, roundStandings } from '../lib/league';
 
 export function StandingsPage({ data, nameOf }: { data: RoundData | null; nameOf: (id: string) => string }) {
   if (!data) return <EmptyRound />;
@@ -41,8 +41,8 @@ export function StandingsPage({ data, nameOf }: { data: RoundData | null; nameOf
                 </thead>
                 <tbody>
                   {standings.get(group.id)!.map((row, i, rows) => {
-                    const up = g > 0 && i === 0;
-                    const down = g < last && i === rows.length - 1;
+                    const up = g > 0 && i < PROMOTIONS;
+                    const down = g < last && i >= rows.length - PROMOTIONS;
                     return (
                       <tr key={row.player} className={up ? 'up' : down ? 'down' : undefined}>
                         <td className="pos">
@@ -76,8 +76,8 @@ export function StandingsPage({ data, nameOf }: { data: RoundData | null; nameOf
         );
       })}
       <p className="legend">
-        Orden: victorias; si hay empate, diferencia de sets y después de juegos. El primero de cada grupo sube y el último baja al
-        cerrar la vuelta.
+        Orden: victorias; si hay empate, diferencia de sets y después de juegos. Al cerrar la vuelta suben los {PROMOTIONS}{' '}
+        primeros de cada grupo y bajan los {PROMOTIONS} últimos.
         {anyTie && ' «=» empate total, se decide por sorteo.'}
       </p>
     </>

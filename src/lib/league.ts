@@ -6,6 +6,9 @@ import type { RoundData, RoundMatch } from './db';
 
 export const GROUP_IDS: GroupId[] = ['A', 'B', 'C'];
 
+/** Jugadores que suben y bajan entre cada par de grupos al cerrar una vuelta. */
+export const PROMOTIONS = 2;
+
 /** Partidos con resultado válido, que son los que cuentan para la clasificación. */
 export function playedMatches(matches: readonly RoundMatch[]): PlayedMatch[] {
   return matches.filter((match) => match.estado === 'jugado' && validateSets(match.sets) === null);
@@ -16,11 +19,11 @@ export function roundStandings(data: Pick<RoundData, 'groups' | 'matches'>): Map
   return new Map(data.groups.map((group) => [group.id, groupStandings(group.players, played)]));
 }
 
-/** Grupos de la siguiente vuelta aplicando 1 ascenso y 1 descenso. */
+/** Grupos de la siguiente vuelta aplicando los ascensos y descensos. */
 export function proposeNextGroups(data: Pick<RoundData, 'groups' | 'matches'>): Group[] {
   const standings = roundStandings(data);
   const ranking = new Map([...standings].map(([id, rows]) => [id, rows.map((row) => row.player)]));
-  return nextGroups(data.groups, ranking);
+  return nextGroups(data.groups, ranking, PROMOTIONS);
 }
 
 export function formatSets(match: Pick<RoundMatch, 'sets'>): string {

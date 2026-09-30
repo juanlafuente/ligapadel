@@ -12,7 +12,7 @@ calendario generado automáticamente con parejas que rotan y clasificación indi
 - Resultados por sets (6-4, 7-5, 7-6…); el tercer set se juega completo.
 - Cada victoria vale **1 punto**, da igual ganar 2-0 o 2-1 (victorias y derrotas, como en la NFL).
 - Clasificación: victorias → diferencia de sets → diferencia de juegos → juegos ganados → sorteo.
-- Al cerrar la vuelta sube el primero y baja el último de cada grupo.
+- Al cerrar la vuelta **suben los 2 primeros y bajan los 2 últimos** entre Oro y Plata y entre Plata y Bronce.
 
 ## Desarrollo
 

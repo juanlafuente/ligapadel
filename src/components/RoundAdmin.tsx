@@ -3,7 +3,7 @@ import { checkGroups, generateRound } from '../domain/schedule';
 import { MatchCard } from './MatchCard';
 import type { Group, ScheduledMatch } from '../domain/types';
 import { createRound, fetchRoundData, setRoundState, type RoundData } from '../lib/db';
-import { errorMessage, GROUP_IDS, proposeNextGroups } from '../lib/league';
+import { errorMessage, GROUP_IDS, PROMOTIONS, proposeNextGroups } from '../lib/league';
 import type { League } from '../lib/useLeague';
 
 /** Cierre de la vuelta en curso o creación de la siguiente. */
@@ -141,7 +141,7 @@ function NewRound({ league, previous }: { league: League; previous: RoundData | 
       <h2>Nueva vuelta: {numero}</h2>
       <p className="muted">
         {previous
-          ? `Grupos propuestos según la vuelta ${previous.round.numero} (sube 1 y baja 1). Puedes ajustarlos.`
+          ? `Grupos propuestos según la vuelta ${previous.round.numero} (suben ${PROMOTIONS} y bajan ${PROMOTIONS}). Puedes ajustarlos.`
           : 'Reparte los jugadores en los grupos de 4. Cada grupo juega 3 partidos (semanas 1 a 3); la semana 4 es de recuperación.'}
       </p>
       <div className="groupCounts">
